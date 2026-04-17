@@ -21,17 +21,6 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
 
-  # Explicitly allow unauthenticated access via IAM
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args:
-      - 'run'
-      - 'services'
-      - 'add-iam-policy-binding'
-      - 'smartcart-ai'
-      - '--region=us-central1'
-      - '--member=allUsers'
-      - '--role=roles/run.invoker'
-
 images:
   - 'gcr.io/$PROJECT_ID/smartcart-ai'
 
