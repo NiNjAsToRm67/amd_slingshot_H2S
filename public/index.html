@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCart AI - Shopping Assistant</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --primary: #2563eb;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --accent: #10b981;
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: var(--primary); text-align: center; font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { text-align: center; color: var(--muted); margin-bottom: 2.5rem; }
+        
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+        }
+        .card h2 { margin-top: 0; color: var(--text); border-bottom: 2px solid var(--bg); padding-bottom: 10px; }
+        
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text); }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--primary); }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #1d4ed8; }
+        button:focus { outline: 3px solid #93c5fd; outline-offset: 2px;}
+
+        /* Pretty UI Results */
+        .result-box {
+            display: none;
+            margin-top: 20px;
+            background: #f0fdf4;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        .result-box h3 { margin: 0 0 10px 0; color: #166534; font-size: 1.1rem; }
+        .reasoning {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #15803d;
+            background: #dcfce7;
+            padding: 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .items-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #166534;
+            font-weight: bold;
+        }
+        .error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SmartCart AI 🛒</h1>
+        <p class="subtitle">Your Autonomous Shopping Assistant</p>
+    </header>
+
+    <main>
+        <!-- Recommend Section -->
+        <section class="card" aria-labelledby="rec-heading">
+            <h2 id="rec-heading">✨ Personal Recommendations</h2>
+            <div class="input-group">
+                <label for="rec-history">What's in your basket right now?</label>
+                <input type="text" id="rec-history" placeholder="e.g. milk, eggs" />
+            </div>
+            <button onclick="testRecommend()" aria-label="Get Recommendations">Suggest Additions</button>
+            <div class="result-box" id="rec-result-container">
+                <h3>Recommended for you:</h3>
+                <ul class="items-list" id="rec-items"></ul>
+                <div class="reasoning">🤖 <strong>AI Reason:</strong> <span id="rec-reason"></span></div>
+            </div>
+        </section>
+
+        <!-- Auto Cart Section -->
+        <section class="card" aria-labelledby="cart-heading">
+            <h2 id="cart-heading">📦 Zero-Click Auto Cart</h2>
+            <div class="input-group">
+                <label for="cart-history">Your habitual purchases</label>
+                <input type="text" id="cart-history" placeholder="e.g. milk" />
+            </div>
+            <button onclick="testAutoCart()" aria-label="Generate Smart Cart">Build My Cart</button>
+            <div class="result-box" id="cart-result-container">
+                <h3>Your Cart is Ready:</h3>
+                <ul class="items-list" id="cart-items"></ul>
+                <div class="reasoning">🤖 <strong>AI Reason:</strong> <span id="cart-reason"></span> (Confidence: <span id="cart-conf"></span>)</div>
+            </div>
+        </section>
+
+        <!-- Inventory Section -->
+        <section class="card" aria-labelledby="inv-heading">
+            <h2 id="inv-heading">📊 Admin: Warehouse Optimization</h2>
+            <p style="color:var(--muted)">Run the AI to predict demand and prevent stockouts.</p>
+            <button onclick="testOptimize()" aria-label="Run Inventory Report">Run Optimization</button>
+            <div class="result-box" id="inv-result-container" style="background:#f8fafc; border-left-color:var(--primary);">
+                <h3 style="color:var(--text);">Inventory Action Plan:</h3>
+                <p style="margin:5px 0;"><strong>🔴 Needs Restock:</strong> <span id="inv-restock" style="color:#ef4444; font-weight:bold;"></span></p>
+                <p style="margin:5px 0;"><strong>⚠️ Overstocked:</strong> <span id="inv-over" style="color:#eab308; font-weight:bold;"></span></p>
+                <div class="reasoning" style="background:#e0f2fe; color:#0369a1;">🤖 <strong>AI Reason:</strong> <span id="inv-reason"></span></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        async function fetchAPI(endpoint, body = null) {
+            const options = {
+                method: body ? 'POST' : 'GET',
+                headers: { 'Content-Type': 'application/json' },
+            };
+            if (body) options.body = JSON.stringify(body);
+            if(endpoint === '/optimize-inventory' && body === null) options.method = 'POST';
+
+            try {
+                const response = await fetch(endpoint, options);
+                return await response.json();
+            } catch (err) {
+                return { error: err.message };
+            }
+        }
+
+        function getList(id) {
+            const val = document.getElementById(id).value;
+            return val ? val.split(',').map(i => i.trim().toLowerCase()).filter(i => i) : [];
+        }
+
+        async function testRecommend() {
+            const history = getList('rec-history');
+            const data = await fetchAPI('/recommend', { user_id: "U1", purchase_history: history });
+            
+            const container = document.getElementById('rec-result-container');
+            if(data.recommendations && data.recommendations.length > 0) {
+                document.getElementById('rec-items').innerHTML = data.recommendations.map(i => `<li>${i}</li>`).join('');
+                document.getElementById('rec-reason').textContent = data.reason;
+                container.style.display = 'block';
+            } else {
+                document.getElementById('rec-items').innerHTML = '<li>No recommendations found. Keep shopping!</li>';
+                document.getElementById('rec-reason').textContent = "Need more items to analyze patterns.";
+                container.style.display = 'block';
+            }
+        }
+
+        async function testAutoCart() {
+            const history = getList('cart-history');
+            // If they click without typing anything, warn them gently.
+            if(history.length === 0) {
+                alert("Please drop at least one item (e.g. 'milk') into your habitual purchases to predict the cart!");
+                return;
+            }
+            
+            const data = await fetchAPI('/auto-cart', { user_id: "U1", purchase_history: history });
+            
+            const container = document.getElementById('cart-result-container');
+            document.getElementById('cart-items').innerHTML = data.cart.map(i => `<li>${i}</li>`).join('');
+            document.getElementById('cart-reason').textContent = data.reason;
+            document.getElementById('cart-conf').textContent = data.confidence;
+            container.style.display = 'block';
+        }
+
+        async function testOptimize() {
+            const data = await fetchAPI('/optimize-inventory');
+            
+            const container = document.getElementById('inv-result-container');
+            document.getElementById('inv-restock').textContent = data.restock.join(', ');
+            document.getElementById('inv-over').textContent = data.overstock.join(', ');
+            document.getElementById('inv-reason').textContent = data.reason;
+            container.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
